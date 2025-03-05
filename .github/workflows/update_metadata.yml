@@ -37,7 +37,7 @@ jobs:
       - name: Generate Hashes for .vbs files
         run: |
           data='[]'
-          baseUrl="https://github.com/${{ github.repository }}"
+          baseUrl="https://github.com/${{ github.repository }}/raw/refs/heads/master/"
 
           for dir in */; do
             if [[ -d "$dir" ]]; then
