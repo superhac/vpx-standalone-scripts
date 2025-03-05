@@ -48,7 +48,7 @@ jobs:
                 for file2 in "$file.original"; do
                   hash=$(sha256sum "$file" | awk '{print $1}')
                   hash2=$(sha256sum "$file2" | awk '{print $1}')
-                  new_item="{\"file\": \"$file2\", \"sha256\": \"$hash2\", \"url\": \"$baseUrl/$dir/$file2\", \"patched\": { \"file\": \"$file\", \"sha256\": \"$hash\", \"url\": \"$baseUrl/$dir/$file\"}  }"
+                  new_item="{\"file\": \"$file2\", \"sha256\": \"$hash2\", \"url\": \"$baseUrl$dir$file2\", \"patched\": { \"file\": \"$file\", \"sha256\": \"$hash\", \"url\": \"$baseUrl$dir$file\"}  }"
                   echo $new_item
                   data=$(jq --argjson new "$new_item" '. + [$new]' <<< "$data")
                 done
