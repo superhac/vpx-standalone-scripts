@@ -1,10 +1,8 @@
-name: Push Processing Trigger
+name: Update metadata 
 
 on:
   push:
-    branches: [ "master" ]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
@@ -39,7 +37,7 @@ jobs:
       - name: Generate Hashes for .vbs files
         run: |
           data='[]'
-          baseUrl="https://github.com/jsm174/vpx-standalone-scripts/"
+          baseUrl="https://github.com/${{ github.repository }}"
 
           for dir in */; do
             if [[ -d "$dir" ]]; then
@@ -50,7 +48,7 @@ jobs:
                 for file2 in "$file.original"; do
                   hash=$(sha256sum "$file" | awk '{print $1}')
                   hash2=$(sha256sum "$file2" | awk '{print $1}')
-                  new_item="{\"file\": \"$file2\", \"sha256\": \"$hash2\", \"url\": \"$baseUrl$file2\", \"patched\": { \"file\": \"$file\", \"sha256\": \"$hash\", \"url\": \"$baseUrl$file\"}  }"
+                  new_item="{\"file\": \"$file2\", \"sha256\": \"$hash2\", \"url\": \"$baseUrl/$file2\", \"patched\": { \"file\": \"$file\", \"sha256\": \"$hash\", \"url\": \"$baseUrl/$file\"}  }"
                   echo $new_item
                   data=$(jq --argjson new "$new_item" '. + [$new]' <<< "$data")
                 done
@@ -61,10 +59,18 @@ jobs:
           done
           echo "$data" > hashes.json
 
-      - name: Commit and Push Changes
+      - name: Upload Hashes Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hashes
+          path: hashes.json
+
+      - if: github.repository == 'jsm174/vpx-standalone-scripts' && github.ref == 'refs/heads/master'
+        name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Update vbs patches and hashes" 
+          git commit -m "meta: regenerate hashes and vbs diffs"
           git push
+          
